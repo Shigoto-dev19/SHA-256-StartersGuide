@@ -36,7 +36,7 @@ function random_path() {
 }
 
 function looped_random_path(){
-    for (let i = 0; i < 100000; i++) {
+    for (let i = 0; i < 10000; i++) {
         let rndInput = (Math.random() * 2_000_000).toString();
         //let rndInput = getrandom();
         let hash = My_SHA256(rndInput);
@@ -45,10 +45,22 @@ function looped_random_path(){
     }
 }
 
+function looped_random_path_Hash_of_hash(){
+    for (let i = 0; i < 10000; i++) {
+        let rndInput = (Math.random() * 2_000_000).toString();
+        //let rndInput = getrandom();
+        let hash = My_SHA256(My_SHA256(rndInput));
+        let hashReference = (sha256.create().update(rndInput).hex()); // the same input for both hashfuntions
+        let hashRefhash = sha256.create().update(hashReference).hex();
+        assert( hash === hashRefhash, "hashes are different");
+    }
+}
+
 it('happy_test',() => happy_path());
 it('unhappy_test',() => unhappy_path());
 it('random_test',() => random_path());
 it("looped_random_test", () => looped_random_path());
+it("looped_random_path_Hash_of_hash", () => looped_random_path_Hash_of_hash());
     
    
 

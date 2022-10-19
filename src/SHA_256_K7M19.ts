@@ -25,12 +25,24 @@ function dec2bin(dec:number) { return (dec >>> 0).toString(2); }
 
 // Padding the message to obtain a 512-bit number according to the standards of SHA-256
 function appending(text: string){
-
+    
     let ld = dec2bin(text.length);
     let text1 = text + '1';
-    let l = 512 - text1.length -ld.length;
+    let N = Math.ceil(text1.length / 512);
+    let l = 512 * N - text1.length - ld.length;
     return text1 + '0'.repeat(l) + ld ;
     }
+
+// Parsing the message to obtain N-512 bit blocks
+function parsing(text:string):string[] {
+    
+    let N = [];
+    for (let i=0; i<text.length; i+= 512){
+        let M:string = text.substring(i,i+512);
+        N.push(M);
+    }
+    return N;
+}
     
 // Parsing the message to obtain 16 32-bit blocks
 function M_op(bin:string){
@@ -165,11 +177,11 @@ function BAM32_2(x:string, y:string){
 }
 
 // Bitwise addition modulo 2^32 of n numbers
-function BAM32_n(...argumentss:string[]){
+function BAM32_n(...args:string[]){
     
     let s = 0;
-    for (let i=0; i<argumentss.length;i++){
-        s+= parseInt(argumentss[i],2);
+    for (let i=0; i<args.length;i++){
+        s+= parseInt(args[i],2);
     }
         
     while( s > Math.pow(2,32)) {
@@ -180,7 +192,7 @@ function BAM32_n(...argumentss:string[]){
 }
 
 // Initialize the first 16 32-bit blocks and calculate the the remainding 48 blocks according to SHA-256 Standards
-function W_op(M:any[]){
+function W_op(M:string[]){
 
     let W = [...M];
     for (let t=16; t<=63; t++ ){
@@ -245,24 +257,8 @@ function Bin2Hex(x:string){
 }
 
 // The SHA-256 function of a message containing no more that 512 bits (N=1)
- export function My_SHA256 (inp){
+ export function My_SHA256(inp:string){
     
-    //These words were obtained by taking the first thirty-two bits of the fractional parts of the square roots of the first eight prime numbers.
-    const H_hex = ['6a09e667', 'bb67ae85', '3c6ef372', 'a54ff53a', '510e527f', '9b05688c', '1f83d9ab', '5be0cd19'];
-
-    let H = [];
-    for (let i=0; i<H_hex.length; i++){
-        H[i] = hex2bin(H_hex[i]);
-    }
-
-    let a = hex2bin(H_hex[0]);
-    let b = hex2bin(H_hex[1]);
-    let c = hex2bin(H_hex[2]);
-    let d = hex2bin(H_hex[3]);
-    let e = hex2bin(H_hex[4]);
-    let f = hex2bin(H_hex[5]);
-    let g = hex2bin(H_hex[6]);
-    let h = hex2bin(H_hex[7]);
 
     //These hex words represent the first thirty-two bits of the fractional parts of the cube roots of the first sixty-four prime numbers
     const K = [
@@ -275,43 +271,80 @@ function Bin2Hex(x:string){
         0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2 ];
 
+    //These words were obtained by taking the first thirty-two bits of the fractional parts of the square roots of the first eight prime numbers.
+    const H_hex = ['6a09e667', 'bb67ae85', '3c6ef372', 'a54ff53a', '510e527f', '9b05688c', '1f83d9ab', '5be0cd19'];
+
+    let H = [];
+    for (let i=0; i<H_hex.length; i++){
+        H[i] = hex2bin(H_hex[i]);
+    }
+
     let Kn = [];
     for (let i=0; i< K.length; i++){
         let nbin = K[i].toString(2);
-        Kn[i] = '0'.repeat(32-nbin.length)+nbin;
+        Kn[i] = '0'.repeat(32 - nbin.length) + nbin;
     }
     if (inp != null){
         const BinaryRes = Text2Binary(inp);
-        const M = M_op(appending(BinaryRes));
-        const W = W_op(M);
-        
-        for (let t=0; t<64; t++){
-            let T1 = BAM32_n(h,SIGMA1(e),ch(e,f,g),Kn[t],W[t]);
-            let T2 = BAM32_n(SIGMA0(a),Maj(a,b,c));
-            h=g;
-            g=f;
-            f=e;
-            e= BAM32_n(d,T1);
-            d=c;
-            c=b;
-            b=a;
-            a= BAM32_n (T1,T2);
+        const appended_msg = appending(BinaryRes);
+        const N = parsing(appended_msg); 
+        const N_blocks = N.length;
+        //let M:string[] = [];
+
+        for (let i = 1; i <= N_blocks; i++ ){
+            
+            let M = M_op(N[i-1]);
+            let W = W_op(M);
+
+            let a = H[0];
+            let b = H[1];
+            let c = H[2];
+            let d = H[3];
+            let e = H[4];
+            let f = H[5];
+            let g = H[6];
+            let h = H[7];
+            
+            for (let t=0; t<64; t++){
+                let T1 = BAM32_n(h,SIGMA1(e),ch(e,f,g),Kn[t],W[t]);
+                let T2 = BAM32_n(SIGMA0(a),Maj(a,b,c));
+                h=g;
+                g=f;
+                f=e;
+                e= BAM32_n(d,T1);
+                d=c;
+                c=b;
+                b=a;
+                a= BAM32_n(T1,T2);
+            }
+            
+            H[0] = BAM32_n(a,H[0]);
+            H[1] = BAM32_n(b,H[1]);
+            H[2] = BAM32_n(c,H[2]);
+            H[3] = BAM32_n(d,H[3]);
+            H[4] = BAM32_n(e,H[4]);
+            H[5] = BAM32_n(f,H[5]);
+            H[6] = BAM32_n(g,H[6]);
+            H[7] = BAM32_n(h,H[7]);
+
+            
         }
-    }
-    const abcdefgh = [a,b,c,d,e,f,g,h];
-    let SHA_256_bin = [];
+       
+        let SHA_256_bin = '';
+       
+        for (let i = 0; i<8; i++){
+            SHA_256_bin += H[i];
+        }
+        
+        const SHA_256_hex = Bin2Hex(SHA_256_bin);
+        return SHA_256_hex;
 
-    for (let i=0; i<H.length; i++){
-        SHA_256_bin[i] = BAM32_n(abcdefgh[i],H[i]);
-    }
+        }    
+        }
+        
 
-    const SHA_256_BIN = SHA_256_bin.join('');
-    const SHA_256_hex = Bin2Hex(SHA_256_BIN);
-    return SHA_256_hex;
-    }
-
-//let inp = prompt('Input: ') ;
-const inp = 'abc';
+let inp = prompt('Input: ') ;
+//const inp = 'abc';
 
 console.log(`SHA-256 (${inp}): ${My_SHA256(inp)}`);
 
