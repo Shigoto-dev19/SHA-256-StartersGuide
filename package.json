@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha --timeout 500000 --require ts-node/register ./test/**/*.ts",
     "lint": "eslint '{src,test}/**/*.{js,ts}'",
-    "build": "tsc"
+    "build": "tsc",
+    "hash": "ts-node ./src/command.ts"
   },
   "keywords": [
     "typescript",
@@ -26,6 +27,7 @@
     "mocha": "^10.0.0",
     "prettier": "3.0.0",
     "ts-loader": "^9.4.1",
+    "ts-node": "^10.9.1",
     "ts-node-register": "^1.0.0",
     "typescript": "^4.8.3"
   },
