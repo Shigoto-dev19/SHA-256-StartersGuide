@@ -2,7 +2,7 @@
   "name": "sha256",
   "version": "1.0.0",
   "description": "SHA-256",
-  "main": "SHA_256_K7M19.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha --timeout 500000 --require ts-node/register ./test/**/*.ts",
     "lint": "eslint '{src,test}/**/*.{js,ts}'",
@@ -11,9 +11,9 @@
   },
   "keywords": [
     "typescript",
-    "Hash"
+    "hash function"
   ],
-  "author": "Mahmoud Kaffel",
+  "author": "Shigoto-dev19",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.3.5",
@@ -25,8 +25,6 @@
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "lodash": "^4.17.21",
-    "mocha": "^10.0.0",
     "prettier": "3.0.0",
     "ts-loader": "^9.4.1",
     "ts-node": "^10.9.1",
@@ -34,6 +32,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
+    "mocha": "^10.0.0",
     "@noble/hashes": "^1.3.1",
     "chai": "^4.3.7",
     "js-sha256": "^0.9.0"
