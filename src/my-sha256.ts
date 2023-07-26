@@ -1,21 +1,21 @@
 import { BinaryTools, Constants, Functions, Preprocessing } from './utils';
 
-// Initialize the first 16 32-bit blocks and calculate the the remaining 48 blocks according to SHA-256 Standards
-function W_op(M: string[]) {
-  const W = [...M];
-  for (let t = 16; t <= 63; t++) {
-    W[t] = BinaryTools.bam32_n(
-      Functions.sigma1(W[t - 2]),
-      W[t - 7],
-      Functions.sigma0(W[t - 15]),
-      W[t - 16],
-    );
-  }
-  return W;
-}
-
 // The SHA-256 function of a message containing no more that 512 bits (N=1)
 export function my_sha256(input: string = '') {
+  // Initialize the first 16 32-bit blocks and calculate the the remaining 48 blocks according to SHA-256 Standards
+  function W_op(M: string[]) {
+    const W = [...M];
+    for (let t = 16; t <= 63; t++) {
+      W[t] = BinaryTools.bam32_n(
+        Functions.sigma1(W[t - 2]),
+        W[t - 7],
+        Functions.sigma0(W[t - 15]),
+        W[t - 16],
+      );
+    }
+    return W;
+  }
+
   const H = Preprocessing.setInitialHash();
   // pad & parse input
   const padded_input = Preprocessing.padding(input);

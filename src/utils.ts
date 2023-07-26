@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-namespace */
 
 import { assert } from 'chai';
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BinaryTools {
   // Convert a character to binary
   function char2Binary(input: string) {
@@ -95,7 +95,6 @@ export namespace BinaryOperations {
     return result.join('');
   }
 }
-/* eslint-disable @typescript-eslint/no-namespace */
 export namespace Preprocessing {
   // Padding the message to obtain a 512-bit number according to the standards of SHA-256
   export function padding(input: string) {
